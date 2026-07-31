@@ -1,4 +1,9 @@
 services:
+  # train service is intentionally absent here.
+  # Weights are baked into the backend image at build time (backend/Dockerfile
+  # stage 2 runs train.py and copies the output into the runtime image).
+  # In production this would be a separate pipeline that pushes weights to S3.
+
   postgres:
     image: postgres:16-alpine
     env_file: .env
@@ -31,6 +36,7 @@ services:
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379/0
       DATASET_PATH: /app/data/dataset.csv
+      WEIGHTS_DIR: /app/data/weights
     ports:
       - "8000:8000"
     depends_on:
