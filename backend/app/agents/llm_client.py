@@ -39,9 +39,7 @@ class LLMClient:
     def from_llm(cls, llm: BaseChatModel) -> "LLMClient":
         return cls(llm)
 
-    def call(
-        self, system_prompt: str, user_content: dict, schema: type
-    ) -> Any:
+    def call(self, system_prompt: str, user_content: dict, schema: type) -> Any:
         """Single LLM call; wraps provider errors into AgentError."""
         try:
             structured = self._llm.with_structured_output(schema)
@@ -52,6 +50,4 @@ class LLMClient:
                 ]
             )
         except Exception as exc:
-            raise AgentError(
-                f"{schema.__name__} agent call failed: {exc}"
-            ) from exc
+            raise AgentError(f"{schema.__name__} agent call failed: {exc}") from exc

@@ -56,10 +56,11 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("REDIS_URL", "")
     monkeypatch.setenv("OPENAI_API_KEY", "")
 
+    from fastapi.testclient import TestClient
+
     from app.config import get_settings
     from app.data_source import get_data_source
     from app.main import app
-    from fastapi.testclient import TestClient
 
     get_settings.cache_clear()
     get_data_source.cache_clear()

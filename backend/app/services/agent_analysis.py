@@ -22,9 +22,7 @@ from . import pricing
 log = get_logger(__name__)
 
 
-def analyze(
-    source: DataSource, product_id: str, market: str
-) -> AgentAnalysisResponse:
+def analyze(source: DataSource, product_id: str, market: str) -> AgentAnalysisResponse:
     """Run (or fetch from cache) the three-agent analysis for one
     product/market."""
     settings = get_settings()
@@ -48,9 +46,7 @@ def analyze(
         state["strategist"],
         state["reviewer"],
     )
-    assert (
-        analyst is not None and strategist is not None and reviewer is not None
-    )
+    assert analyst is not None and strategist is not None and reviewer is not None
 
     violations = validate_recommendation(
         strategist,
@@ -65,9 +61,7 @@ def analyze(
         analyst=analyst,
         strategist=strategist,
         reviewer=reviewer,
-        guardrail=GuardrailReport(
-            passed=not violations, violations=violations
-        ),
+        guardrail=GuardrailReport(passed=not violations, violations=violations),
         model=settings.openai_model,
         cached=False,
     )

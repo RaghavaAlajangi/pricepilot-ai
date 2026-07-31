@@ -18,9 +18,7 @@ def test_list_products(client: TestClient) -> None:
 
 
 def test_summary_returns_weekly_series(client: TestClient) -> None:
-    response = client.get(
-        "/api/v1/products/SKU-1000/summary", params={"market": "DE"}
-    )
+    response = client.get("/api/v1/products/SKU-1000/summary", params={"market": "DE"})
     assert response.status_code == 200
     body = response.json()
     assert body["unit_cost"] == 40.0
@@ -38,9 +36,7 @@ def test_elasticity_endpoint(client: TestClient) -> None:
 
 
 def test_unknown_product_is_404(client: TestClient) -> None:
-    response = client.get(
-        "/api/v1/products/SKU-9999/summary", params={"market": "DE"}
-    )
+    response = client.get("/api/v1/products/SKU-9999/summary", params={"market": "DE"})
     assert response.status_code == 404
 
 

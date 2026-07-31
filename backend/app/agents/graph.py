@@ -87,9 +87,7 @@ def build_graph(llm: BaseChatModel):
     return graph.compile()
 
 
-def run_workflow(
-    payload: dict, llm: Optional[BaseChatModel] = None
-) -> AgentState:
+def run_workflow(payload: dict, llm: Optional[BaseChatModel] = None) -> AgentState:
     """Run the full workflow for one ML payload and return the final state."""
     compiled = build_graph(llm or LLMClient.from_settings()._llm)
     initial: AgentState = {

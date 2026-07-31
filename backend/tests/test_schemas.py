@@ -1,8 +1,9 @@
 """Schema validation: valid inputs pass, malformed inputs are rejected."""
 
 import pytest
-from app.schemas import AgentAnalysisRequest, StrategistRecommendation
 from pydantic import ValidationError
+
+from app.schemas import AgentAnalysisRequest, StrategistRecommendation
 
 
 def test_agent_request_valid() -> None:

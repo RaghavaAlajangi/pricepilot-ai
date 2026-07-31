@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pytest
+
 from app.guardrails import ungrounded_numbers, validate_recommendation
 from app.schemas import (
     AgentAnalysisResponse,
@@ -187,9 +188,7 @@ def test_agent_output_grounding(
 
 
 @pytest.mark.parametrize("product_id,market", EXAMPLE_CASES)
-def test_agent_output_safety(
-    product_id: str, market: str, eval_dataset: Path
-) -> None:
+def test_agent_output_safety(product_id: str, market: str, eval_dataset: Path) -> None:
     """Recommended price must clear cost floor and plausibility guardrails."""
     from app.data_source import CsvDataSource
 
@@ -236,9 +235,9 @@ def test_agent_output_consistency(
         max_observed=result.max_observed_price,
     )
     reviewer = state["reviewer"]
-    assert not (violations and reviewer.verdict == "approve"), (
-        f"Reviewer approved despite violations: {violations}"
-    )
+    assert not (
+        violations and reviewer.verdict == "approve"
+    ), f"Reviewer approved despite violations: {violations}"
 
 
 # ---------------------------------------------------------------------------
@@ -274,9 +273,7 @@ def test_inject_bad_triggers_grounding_failure(
         ]
     )
     bad = ungrounded_numbers(cited_text, allowed)
-    assert bad, (
-        "Expected grounding failure not detected for injected bad output"
-    )
+    assert bad, "Expected grounding failure not detected for injected bad output"
 
 
 @pytest.mark.parametrize("product_id,market", [EXAMPLE_CASES[0]])
@@ -303,6 +300,4 @@ def test_inject_bad_triggers_safety_failure(
         min_observed=result.min_observed_price,
         max_observed=result.max_observed_price,
     )
-    assert violations, (
-        "Expected safety violation not detected for injected bad output"
-    )
+    assert violations, "Expected safety violation not detected for injected bad output"

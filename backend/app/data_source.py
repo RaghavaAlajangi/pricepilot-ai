@@ -68,9 +68,7 @@ class CsvDataSource:
         return self._df[cols].drop_duplicates()
 
     def product_series(self, product_id: str, market: str) -> pd.DataFrame:
-        mask = (self._df["product_id"] == product_id) & (
-            self._df["market"] == market
-        )
+        mask = (self._df["product_id"] == product_id) & (self._df["market"] == market)
         return (
             self._df.loc[mask, SERIES_COLUMNS]
             .sort_values("date")
@@ -123,9 +121,7 @@ class PostgresDataSource:
             f"SELECT {', '.join(SERIES_COLUMNS)} FROM {SALES_TABLE} "
             "WHERE product_id = :p AND market = :m ORDER BY date"
         )
-        df = pd.read_sql(
-            query, self._engine, params={"p": product_id, "m": market}
-        )
+        df = pd.read_sql(query, self._engine, params={"p": product_id, "m": market})
         df["date"] = pd.to_datetime(df["date"])
         return df
 
