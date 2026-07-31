@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     # Optional Redis cache for ML/agent results.
     redis_url: str = ""
     cache_ttl_seconds: int = 86400
+    cache_max_size: int = 512
 
     # LLM (required only for the /agents endpoints).
     openai_api_key: str = ""
