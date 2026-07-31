@@ -57,15 +57,21 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements-dev.txt pytest-json-report
       - name: Lint
         run: ruff check app tests
       - name: Format check
         run: ruff format --check app tests
       - name: Run tests
-        run: pytest tests -v -m "not agent"
+        run: pytest tests -v -m "not agent" --json-report --json-report-file=test_report.json
         env:
           DATASET_PATH: ../data/dataset.csv
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: backend/test_report.json
 
   agent-regression:
     runs-on: ubuntu-latest
@@ -87,6 +93,12 @@ jobs:
           DATASET_PATH: ../data/dataset.csv
       - name: Check regression threshold (block if pass rate drops >2%)
         run: python scripts/check_regression.py agent_report.json
+      - name: Upload agent report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-report
+          path: backend/agent_report.json
 
   frontend-lint:
     runs-on: ubuntu-latest
@@ -108,3 +120,43 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+
+  pr-comment:
+    if: github.event_name == 'pull_request'
+    needs: [backend-test, agent-regression]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download test report
+        uses: actions/download-artifact@v4
+        with:
+          name: test-report
+          path: backend
+        continue-on-error: true
+
+      - name: Download agent report
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-report
+          path: backend
+        continue-on-error: true
+
+      - name: Generate PR comment
+        id: report
+        working-directory: backend
+        run: |
+          body=$(python scripts/pr_report.py test_report.json agent_report.json tests/agent_baseline.json)
+          # Write to a file to handle multi-line safely
+          echo "$body" > pr_comment.md
+
+      - name: Post comment to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: backend/pr_comment.md
