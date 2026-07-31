@@ -107,12 +107,23 @@ jobs:
       - name: Remove stale Vercel link
         run: rm -rf frontend/.vercel
 
+      - name: Debug Vercel secrets
+        run: |
+          echo "ORG_ID prefix:     ${VERCEL_ORG_ID:0:6}..."
+          echo "PROJECT_ID prefix: ${VERCEL_PROJECT_ID:0:6}..."
+          echo "TOKEN prefix:      ${VERCEL_TOKEN:0:6}..."
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Build and deploy to Vercel
         run: |
@@ -122,3 +133,4 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
