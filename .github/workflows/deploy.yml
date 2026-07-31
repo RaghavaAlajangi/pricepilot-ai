@@ -108,10 +108,6 @@ jobs:
   deploy-frontend:
     needs: frontend-ci
     runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -120,13 +116,20 @@ jobs:
           node-version: "20"
 
       - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+        run: npm install --global vercel@latest
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN --cwd frontend
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      - name: Build for Vercel
-        run: vercel build --prod --token=$VERCEL_TOKEN --cwd frontend
-
-      - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd frontend
+      - name: Build and deploy to Vercel
+        run: |
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
