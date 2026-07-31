@@ -104,18 +104,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Remove stale Vercel link
-        run: rm -rf frontend/.vercel
-
-      - name: Debug Vercel secrets
+      - name: Create Vercel project link
         run: |
-          echo "ORG_ID prefix:     ${VERCEL_ORG_ID:0:6}..."
-          echo "PROJECT_ID prefix: ${VERCEL_PROJECT_ID:0:6}..."
-          echo "TOKEN prefix:      ${VERCEL_TOKEN:0:6}..."
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          mkdir -p frontend/.vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' \
+            > frontend/.vercel/project.json
 
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
