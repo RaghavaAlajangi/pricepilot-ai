@@ -1,6 +1,9 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+    "agent: agentic pipeline regression tests (LangGraph graph wiring and eval)",
+]
 
 [tool.ruff]
 line-length = 88

@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.agent
+
 from app.guardrails import ungrounded_numbers, validate_recommendation
 from app.schemas import (
     AgentAnalysisResponse,

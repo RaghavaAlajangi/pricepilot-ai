@@ -2,6 +2,10 @@
 
 from typing import Any
 
+import pytest
+
+pytestmark = pytest.mark.agent
+
 from app.agents.graph import run_workflow
 from app.schemas import (
     AnalystFindings,
