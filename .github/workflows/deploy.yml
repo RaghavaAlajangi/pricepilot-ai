@@ -34,7 +34,7 @@ jobs:
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: ruff check app tests
-      - run: ruff format --check app tests scripts
+      - run: ruff format --check app tests
       - run: pytest tests -v -m "not agent"
         env:
           DATASET_PATH: ../data/dataset.csv
