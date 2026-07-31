@@ -1,7 +1,7 @@
 # Build context is the REPO ROOT.
 # Build:  docker build -f backend/Dockerfile .
 #
-# Weights are pre-built and committed to data/weights/ — no training stage needed.
+# Weights are trained locally and committed to data/weights/.
 
 # ---- stage 1: install dependencies -----------------------------------------
 FROM python:3.11-slim AS builder

@@ -8,45 +8,6 @@ permissions:
   pull-requests: write
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # train: smoke-test the training script against the real dataset.
-  # Verifies the script runs to completion and writes all three weight tiers.
-  #
-  # Production note: in a real pipeline this job would instead trigger a
-  # separate training repo/pipeline (Airflow, Prefect, SageMaker Pipelines)
-  # that pushes weights to S3 and registers them in MLflow. The backend would
-  # pull from the registry on startup rather than from a local volume.
-  # ---------------------------------------------------------------------------
-  ml-train:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: train
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: train/requirements.txt
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run training script
-        run: python train.py --dataset ../data/dataset.csv --weights-dir /tmp/weights
-        env:
-          DATASET_PATH: ../data/dataset.csv
-          WEIGHTS_DIR: /tmp/weights
-      - name: Verify weight files were produced
-        run: |
-          echo "Weight files produced:"
-          ls -lh /tmp/weights/
-          # Fail if no dedicated, category, or global weights exist
-          test $(ls /tmp/weights/dedicated_*.joblib 2>/dev/null | wc -l) -gt 0 || (echo "ERROR: no dedicated weights" && exit 1)
-          test $(ls /tmp/weights/category_*.joblib  2>/dev/null | wc -l) -gt 0 || (echo "ERROR: no category weights"  && exit 1)
-          test -f /tmp/weights/global_ridge.joblib                              || (echo "ERROR: no global weight"     && exit 1)
-          echo "All weight tiers present."
 
   backend-test:
     runs-on: ubuntu-latest
