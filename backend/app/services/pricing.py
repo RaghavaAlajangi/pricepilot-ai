@@ -3,7 +3,7 @@
 import pandas as pd
 
 from app.data_source import DataSource
-from app.ml.elasticity import fit_elasticity, weekly_aggregate
+from app.ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
 from app.schemas import (
     CurvePoint,
     ElasticityResult,
@@ -82,11 +82,23 @@ def get_summary(
 def get_elasticity(
     source: DataSource, product_id: str, market: str
 ) -> ElasticityResult:
-    """Fit the elasticity model and shape the result for the API."""
+    """Return an elasticity result, preferring saved weights over live fitting.
+
+    Priority: Tier 1 (dedicated) → Tier 2 (category Ridge) → Tier 3 (live OLS).
+    """
     daily = _series_or_raise(source, product_id, market)
-    fit = fit_elasticity(
-        daily, unit_cost=float(daily["unit_cost_eur"].iloc[0])
+    meta = source.list_products()
+    category = str(
+        meta[meta["product_id"] == product_id]["category"].iloc[0]
     )
+    current_price = float(
+        daily.sort_values("date")["unit_price_eur"].iloc[-1]
+    )
+    fit = load_elasticity(product_id, market, category, current_price)
+    if fit is None:
+        fit = fit_elasticity(
+            daily, unit_cost=float(daily["unit_cost_eur"].iloc[0])
+        )
     curve = [
         CurvePoint(
             price=round(float(p), 2),
