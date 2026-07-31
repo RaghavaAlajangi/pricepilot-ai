@@ -15,8 +15,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-pytestmark = pytest.mark.agent
-
 from app.guardrails import ungrounded_numbers, validate_recommendation
 from app.schemas import (
     AgentAnalysisResponse,
@@ -26,6 +24,8 @@ from app.schemas import (
     StrategistRecommendation,
 )
 from app.services import pricing
+
+pytestmark = pytest.mark.agent
 
 # ---------------------------------------------------------------------------
 # Cases: (product_id, market)
