@@ -2,12 +2,16 @@
 
 from typing import Any
 
+import pytest
+
 from app.agents.graph import run_workflow
 from app.schemas import (
     AnalystFindings,
     ReviewerVerdict,
     StrategistRecommendation,
 )
+
+pytestmark = pytest.mark.agent
 
 FAKE_OUTPUTS: dict[type, Any] = {
     AnalystFindings: AnalystFindings(

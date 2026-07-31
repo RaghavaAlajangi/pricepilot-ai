@@ -16,6 +16,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!frontend/lib/
 parts/
 sdist/
 var/
@@ -223,3 +224,5 @@ node_modules/
 out/
 next-env.d.ts
 *.tsbuildinfo
+
+/data/weights

@@ -1,3 +1,13 @@
+0.2.0
+ - date: 31-07-2026
+ - backend:
+    - feat: implement cicd pipeline to deploy app on render
+    - ci: add automated ruff linting and pytest test checks
+    - ci: add reggression based agent pipeline deployment
+ - fronent:
+    - feat: implement cicd pipeline to deploy app on vercel
+    - ci: add automated linting checks
+
 0.1.0
  - date: 31-07-2026
  - backend:

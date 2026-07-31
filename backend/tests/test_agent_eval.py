@@ -25,6 +25,8 @@ from app.schemas import (
 )
 from app.services import pricing
 
+pytestmark = pytest.mark.agent
+
 # ---------------------------------------------------------------------------
 # Cases: (product_id, market)
 # ---------------------------------------------------------------------------

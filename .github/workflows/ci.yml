@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # train: smoke-test the training script against the real dataset.
+  # Verifies the script runs to completion and writes all three weight tiers.
+  #
+  # Production note: in a real pipeline this job would instead trigger a
+  # separate training repo/pipeline (Airflow, Prefect, SageMaker Pipelines)
+  # that pushes weights to S3 and registers them in MLflow. The backend would
+  # pull from the registry on startup rather than from a local volume.
+  # ---------------------------------------------------------------------------
+  ml-train:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: train
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: train/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run training script
+        run: python train.py --dataset ../data/dataset.csv --weights-dir /tmp/weights
+        env:
+          DATASET_PATH: ../data/dataset.csv
+          WEIGHTS_DIR: /tmp/weights
+      - name: Verify weight files were produced
+        run: |
+          echo "Weight files produced:"
+          ls -lh /tmp/weights/
+          # Fail if no dedicated, category, or global weights exist
+          test $(ls /tmp/weights/dedicated_*.joblib 2>/dev/null | wc -l) -gt 0 || (echo "ERROR: no dedicated weights" && exit 1)
+          test $(ls /tmp/weights/category_*.joblib  2>/dev/null | wc -l) -gt 0 || (echo "ERROR: no category weights"  && exit 1)
+          test -f /tmp/weights/global_ridge.joblib                              || (echo "ERROR: no global weight"     && exit 1)
+          echo "All weight tiers present."
+
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt pytest-json-report
+      - name: Lint
+        run: ruff check app tests
+      - name: Format check
+        run: ruff format --check app tests
+      - name: Run tests
+        run: pytest tests -v -m "not agent" --json-report --json-report-file=test_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: backend/test_report.json
+
+  agent-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt pytest-json-report
+      - name: Agent regression tests
+        run: pytest tests -v -m agent --json-report --json-report-file=agent_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Check regression threshold (block if pass rate drops >2%)
+        run: python scripts/check_regression.py agent_report.json
+      - name: Upload agent report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-report
+          path: backend/agent_report.json
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+
+  pr-comment:
+    if: github.event_name == 'pull_request'
+    needs: [backend-test, agent-regression]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download test report
+        uses: actions/download-artifact@v4
+        with:
+          name: test-report
+          path: backend
+        continue-on-error: true
+
+      - name: Download agent report
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-report
+          path: backend
+        continue-on-error: true
+
+      - name: Generate PR comment
+        id: report
+        working-directory: backend
+        run: |
+          body=$(python scripts/pr_report.py test_report.json agent_report.json tests/agent_baseline.json)
+          # Write to a file to handle multi-line safely
+          echo "$body" > pr_comment.md
+
+      - name: Post comment to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: backend/pr_comment.md

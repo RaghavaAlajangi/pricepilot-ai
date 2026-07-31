@@ -1,0 +1,121 @@
+# Deploys frontend to Vercel and backend to Render.
+# Triggered when a version tag (v*.*.*) is pushed.
+#
+# Required repository secrets (Settings → Secrets and variables → Secrets):
+#   VERCEL_TOKEN        — Vercel personal access token
+#   VERCEL_ORG_ID       — Vercel team/org ID  (vercel link → .vercel/project.json)
+#   VERCEL_PROJECT_ID   — Vercel project ID   (vercel link → .vercel/project.json)
+#   RENDER_API_KEY      — Render API key (Account → API Keys)
+#   RENDER_SERVICE_ID   — Render service ID (from service URL: srv-xxxxx)
+
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # CI gate — backend lint + tests, frontend lint + build
+  # ---------------------------------------------------------------------------
+  backend-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check app tests
+      - run: ruff format --check app tests
+      - run: pytest tests -v -m "not agent"
+        env:
+          DATASET_PATH: ../data/dataset.csv
+
+  frontend-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  agent-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt pytest-json-report
+      - run: pytest tests -v -m agent --json-report --json-report-file=agent_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Check regression threshold (block if pass rate drops >2%)
+        run: python scripts/check_regression.py agent_report.json
+
+  # ---------------------------------------------------------------------------
+  # Deploy backend to Render
+  # ---------------------------------------------------------------------------
+  backend-deploy:
+    needs: [backend-ci, frontend-ci, agent-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true
+
+  # ---------------------------------------------------------------------------
+  # Deploy frontend to Vercel
+  # ---------------------------------------------------------------------------
+  frontend-deploy:
+    needs: [backend-ci, frontend-ci, agent-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build and deploy to Vercel
+        run: |
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
