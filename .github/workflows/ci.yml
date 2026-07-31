@@ -15,7 +15,7 @@ jobs:
   # that pushes weights to S3 and registers them in MLflow. The backend would
   # pull from the registry on startup rather than from a local volume.
   # ---------------------------------------------------------------------------
-  train:
+  ml-train:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -44,7 +44,7 @@ jobs:
           test -f /tmp/weights/global_ridge.joblib                              || (echo "ERROR: no global weight"     && exit 1)
           echo "All weight tiers present."
 
-  backend:
+  backend-test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -86,7 +86,7 @@ jobs:
         env:
           DATASET_PATH: ../data/dataset.csv
 
-  frontend:
+  frontend-lint:
     runs-on: ubuntu-latest
     defaults:
       run:
