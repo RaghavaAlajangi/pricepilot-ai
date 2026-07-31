@@ -56,11 +56,30 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
 
+  agent-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt pytest-json-report
+      - run: pytest tests -v -m agent --json-report --json-report-file=agent_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Check regression threshold (block if pass rate drops >2%)
+        run: python scripts/check_regression.py agent_report.json
+
   # ---------------------------------------------------------------------------
   # Deploy backend to Render
   # ---------------------------------------------------------------------------
   backend-deploy:
-    needs: [backend-ci, frontend-ci]
+    needs: [backend-ci, frontend-ci, agent-regression]
     runs-on: ubuntu-latest
     steps:
       - uses: JorgeLNJunior/render-deploy@v1.5.0
@@ -73,7 +92,7 @@ jobs:
   # Deploy frontend to Vercel
   # ---------------------------------------------------------------------------
   frontend-deploy:
-    needs: [backend-ci, frontend-ci]
+    needs: [backend-ci, frontend-ci, agent-regression]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
