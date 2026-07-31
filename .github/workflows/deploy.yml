@@ -59,7 +59,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # Deploy backend to Render
   # ---------------------------------------------------------------------------
-  deploy-backend:
+  backend-deploy:
+    needs: [backend-ci, frontend-ci]
     runs-on: ubuntu-latest
     steps:
       - uses: JorgeLNJunior/render-deploy@v1.5.0
@@ -71,8 +72,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # Deploy frontend to Vercel
   # ---------------------------------------------------------------------------
-  deploy-frontend:
-    needs: frontend-ci
+  frontend-deploy:
+    needs: [backend-ci, frontend-ci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
