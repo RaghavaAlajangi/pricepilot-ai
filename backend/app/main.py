@@ -2,7 +2,7 @@
 
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +15,7 @@ from .schemas import HealthResponse
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Validate configuration and warm the data source before serving."""
     settings = get_settings()
     configure_logging(settings.log_level)
@@ -30,7 +30,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     log.info(
         "startup_complete",
         db="postgres" if settings.database_url else "csv",
-        cache="redis" if settings.redis_url else "disabled",
+        cache=f"memory(ttl={settings.cache_ttl_seconds}s,"
+        f" max={settings.cache_max_size})",
         llm_configured=bool(settings.openai_api_key),
     )
     yield
