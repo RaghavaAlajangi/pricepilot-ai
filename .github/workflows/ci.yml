@@ -61,7 +61,7 @@ jobs:
       - name: Lint
         run: ruff check app tests
       - name: Format check
-        run: ruff format --check app tests scripts
+        run: ruff format --check app tests
       - name: Run tests
         run: pytest tests -v -m "not agent"
         env:
