@@ -3,12 +3,12 @@ models."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.agents.graph import AgentError
-from app.config import get_settings
-from app.data_source import DataSource, get_data_source
-from app.logging_conf import get_logger
-from app.ml.elasticity import InsufficientDataError
-from app.schemas import (
+from ..agents.graph import AgentError
+from ..config import get_settings
+from ..data_source import DataSource, get_data_source
+from ..logging_conf import get_logger
+from ..ml.elasticity import InsufficientDataError
+from ..schemas import (
     AgentAnalysisRequest,
     AgentAnalysisResponse,
     ElasticityResult,
@@ -16,8 +16,8 @@ from app.schemas import (
     ProductInfo,
     ProductSummary,
 )
-from app.services import agent_analysis, pricing
-from app.services.pricing import ProductNotFoundError
+from ..services import agent_analysis, pricing
+from ..services.pricing import ProductNotFoundError
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/api/v1")

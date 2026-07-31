@@ -15,8 +15,8 @@ from typing import Protocol
 import pandas as pd
 from sqlalchemy import Engine, create_engine, inspect, text
 
-from app.config import get_settings
-from app.logging_conf import get_logger
+from .config import get_settings
+from .logging_conf import get_logger
 
 log = get_logger(__name__)
 

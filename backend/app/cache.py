@@ -7,8 +7,8 @@ from typing import Optional
 
 import redis
 
-from app.config import get_settings
-from app.logging_conf import get_logger
+from .config import get_settings
+from .logging_conf import get_logger
 
 log = get_logger(__name__)
 

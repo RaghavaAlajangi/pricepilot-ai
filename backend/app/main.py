@@ -7,11 +7,11 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import router
-from app.config import get_settings
-from app.data_source import get_data_source
-from app.logging_conf import configure_logging, get_logger
-from app.schemas import HealthResponse
+from .api.routes import router
+from .config import get_settings
+from .data_source import get_data_source
+from .logging_conf import configure_logging, get_logger
+from .schemas import HealthResponse
 
 
 @asynccontextmanager

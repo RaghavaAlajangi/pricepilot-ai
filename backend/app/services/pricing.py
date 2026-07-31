@@ -2,9 +2,9 @@
 
 import pandas as pd
 
-from app.data_source import DataSource
-from app.ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
-from app.schemas import (
+from ..data_source import DataSource
+from ..ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
+from ..schemas import (
     CurvePoint,
     ElasticityResult,
     ProductInfo,

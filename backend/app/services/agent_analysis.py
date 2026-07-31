@@ -1,4 +1,5 @@
-"""Orchestrates one agent analysis: cache -> ML payload -> LangGraph -> guardrails.
+"""Orchestrates one agent analysis: cache -> ML payload -> LangGraph ->
+guardrails.
 
 Every run emits a structured compliance log entry (input hash, model,
 latency, validation status) — the payload itself is derived from
@@ -9,14 +10,14 @@ import hashlib
 import json
 import time
 
-from app.agents.graph import run_workflow
-from app.cache import cache_get, cache_set
-from app.config import get_settings
-from app.data_source import DataSource
-from app.guardrails import validate_recommendation
-from app.logging_conf import get_logger
-from app.schemas import AgentAnalysisResponse, GuardrailReport
-from app.services import pricing
+from ..agents.graph import run_workflow
+from ..cache import cache_get, cache_set
+from ..config import get_settings
+from ..data_source import DataSource
+from ..guardrails import validate_recommendation
+from ..logging_conf import get_logger
+from ..schemas import AgentAnalysisResponse, GuardrailReport
+from . import pricing
 
 log = get_logger(__name__)
 
@@ -24,7 +25,8 @@ log = get_logger(__name__)
 def analyze(
     source: DataSource, product_id: str, market: str
 ) -> AgentAnalysisResponse:
-    """Run (or fetch from cache) the three-agent analysis for one product/market."""
+    """Run (or fetch from cache) the three-agent analysis for one
+    product/market."""
     settings = get_settings()
     cache_key = f"agents:{settings.openai_model}:{product_id}:{market}"
     if cached := cache_get(cache_key):

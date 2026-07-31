@@ -16,16 +16,16 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 
-from app.agents.prompts import (
-    ANALYST_PROMPT,
-    REVIEWER_PROMPT,
-    STRATEGIST_PROMPT,
-)
-from app.config import get_settings
-from app.schemas import (
+from ..config import get_settings
+from ..schemas import (
     AnalystFindings,
     ReviewerVerdict,
     StrategistRecommendation,
+)
+from .prompts import (
+    ANALYST_PROMPT,
+    REVIEWER_PROMPT,
+    STRATEGIST_PROMPT,
 )
 
 LLM_TEMPERATURE = 0.2  # low: we want consistent, factual analysis
