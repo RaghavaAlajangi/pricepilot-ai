@@ -32,7 +32,9 @@ pytestmark = pytest.mark.agent
 def no_saved_weights(monkeypatch: pytest.MonkeyPatch) -> None:
     """Force live fitting so committed weights don't interfere with synthetic data."""
     import app.services.pricing as pricing_mod
+
     monkeypatch.setattr(pricing_mod, "load_elasticity", lambda *_: None)
+
 
 # ---------------------------------------------------------------------------
 # Cases: (product_id, market)
