@@ -39,7 +39,6 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY --from=builder /install /usr/local
 COPY backend/app     ./app
-COPY backend/scripts ./scripts
 COPY data/dataset.csv         ./data/dataset.csv
 # Bake the trained weights straight into the image — no volume needed.
 COPY --from=trainer /app/data/weights ./data/weights
