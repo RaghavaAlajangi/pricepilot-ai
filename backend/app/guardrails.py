@@ -7,7 +7,7 @@ Two kinds of checks live here (and are reused by scripts/evaluate_agents.py):
 
 import re
 
-from app.schemas import StrategistRecommendation
+from .schemas import StrategistRecommendation
 
 COST_FLOOR_MARGIN = 1.02  # never recommend below cost + 2%
 MAX_MOVE_FROM_CURRENT = 0.30  # max +/-30% vs current price

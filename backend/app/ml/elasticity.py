@@ -25,9 +25,7 @@ from sklearn.linear_model import LinearRegression
 # at the shared docker-compose volume (/app/weights).
 # Default matches the baked-in path in the Docker image (data/weights/).
 # Override via WEIGHTS_DIR env var for local dev or CI runs.
-_default_weights = (
-    Path(__file__).parent.parent.parent.parent / "data" / "weights"
-)
+_default_weights = Path(__file__).parent.parent.parent.parent / "data" / "weights"
 WEIGHTS_DIR = Path(os.environ.get("WEIGHTS_DIR", str(_default_weights)))
 
 MIN_WEEKS = 8
@@ -84,9 +82,7 @@ def _design_matrix(weekly: pd.DataFrame) -> np.ndarray:
     ln_price = np.log(weekly["avg_price"].to_numpy())
     ln_ads = np.log1p(weekly["ad_spend"].to_numpy())
     months = pd.get_dummies(weekly["week"].dt.month, dtype=float)
-    months = months.reindex(
-        columns=range(1, 12), fill_value=0.0
-    )  # drop December
+    months = months.reindex(columns=range(1, 12), fill_value=0.0)  # drop December
     return np.column_stack([ln_price, ln_ads, months.to_numpy()])
 
 
@@ -138,9 +134,7 @@ def _bundle_to_fit(
     grid_profit = (grid - unit_cost) * grid_units
     best = int(np.argmax(grid_profit))
     elasticity = float(bundle["elasticity"])
-    r_squared = float(
-        bundle.get("r_squared", bundle.get("r_squared_train", 0.0))
-    )
+    r_squared = float(bundle.get("r_squared", bundle.get("r_squared_train", 0.0)))
     profit_at_current = float(np.interp(current_price, grid, grid_profit))
 
     warnings: list[str] = []
@@ -154,9 +148,7 @@ def _bundle_to_fit(
             "the observed price range — treat as an upper bound, not a target."
         )
     if best in (0, GRID_POINTS - 1):
-        warnings.append(
-            "Optimum sits at the edge of the observed price range."
-        )
+        warnings.append("Optimum sits at the edge of the observed price range.")
     if r_squared < 0.3:
         warnings.append("Low model fit (R² < 0.3); interpret with caution.")
 
@@ -244,9 +236,7 @@ def fit_elasticity(daily: pd.DataFrame, unit_cost: float) -> ElasticityFit:
     current_price = float(daily.sort_values("date")["unit_price_eur"].iloc[-1])
     grid = np.linspace(min_price, max_price, GRID_POINTS)
     controls = X[:, 1:].mean(axis=0)
-    grid_X = np.column_stack(
-        [np.log(grid), np.tile(controls, (GRID_POINTS, 1))]
-    )
+    grid_X = np.column_stack([np.log(grid), np.tile(controls, (GRID_POINTS, 1))])
     grid_units = np.exp(model.predict(grid_X))
     grid_profit = (grid - unit_cost) * grid_units
 

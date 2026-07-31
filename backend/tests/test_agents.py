@@ -44,9 +44,7 @@ class FakeStructuredLLM:
 
 def test_workflow_runs_all_three_agents_in_order() -> None:
     llm = FakeStructuredLLM()
-    state = run_workflow(
-        {"elasticity": -1.8, "current_price_eur": 80.0}, llm=llm
-    )
+    state = run_workflow({"elasticity": -1.8, "current_price_eur": 80.0}, llm=llm)
 
     assert llm.calls == [
         AnalystFindings,

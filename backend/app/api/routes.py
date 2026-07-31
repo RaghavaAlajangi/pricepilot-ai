@@ -3,12 +3,12 @@ models."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.agents.graph import AgentError
-from app.config import get_settings
-from app.data_source import DataSource, get_data_source
-from app.logging_conf import get_logger
-from app.ml.elasticity import InsufficientDataError
-from app.schemas import (
+from ..agents.llm_client import AgentError
+from ..config import get_settings
+from ..data_source import DataSource, get_data_source
+from ..logging_conf import get_logger
+from ..ml.elasticity import InsufficientDataError
+from ..schemas import (
     AgentAnalysisRequest,
     AgentAnalysisResponse,
     ElasticityResult,
@@ -16,8 +16,8 @@ from app.schemas import (
     ProductInfo,
     ProductSummary,
 )
-from app.services import agent_analysis, pricing
-from app.services.pricing import ProductNotFoundError
+from ..services import agent_analysis, pricing
+from ..services.pricing import ProductNotFoundError
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/api/v1")
@@ -46,9 +46,7 @@ async def get_summary(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-@router.get(
-    "/products/{product_id}/elasticity", response_model=ElasticityResult
-)
+@router.get("/products/{product_id}/elasticity", response_model=ElasticityResult)
 async def get_elasticity(
     product_id: str,
     market: Market = MarketQuery,
@@ -76,9 +74,7 @@ async def analyze_with_agents(
             detail="Missing OPENAI_API_KEY; agent analysis is unavailable.",
         )
     try:
-        return agent_analysis.analyze(
-            source, request.product_id, request.market
-        )
+        return agent_analysis.analyze(source, request.product_id, request.market)
     except ProductNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except InsufficientDataError as exc:

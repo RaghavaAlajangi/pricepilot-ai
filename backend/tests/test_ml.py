@@ -2,6 +2,7 @@
 
 import pandas as pd
 import pytest
+
 from app.ml.elasticity import (
     InsufficientDataError,
     fit_elasticity,

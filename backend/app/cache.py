@@ -1,45 +1,38 @@
-"""Optional Redis JSON cache. If Redis is unconfigured or down, caching
-silently degrades to a no-op so the app keeps working."""
+"""In-memory TTL cache backed by cachetools.TTLCache.
 
-import json
-from functools import lru_cache
+Replaces the previous Redis-based cache. Single process only — sufficient
+for this deployment model. TTL and max size are taken from settings.
+"""
+
 from typing import Optional
 
-import redis
+from cachetools import TTLCache
 
-from app.config import get_settings
-from app.logging_conf import get_logger
+from .config import get_settings
+from .logging_conf import get_logger
 
 log = get_logger(__name__)
 
+_cache: Optional[TTLCache] = None
 
-@lru_cache
-def _client() -> Optional[redis.Redis]:
-    url = get_settings().redis_url
-    if not url:
-        return None
-    return redis.Redis.from_url(url, decode_responses=True, socket_timeout=2)
+
+def _get_cache() -> TTLCache:
+    global _cache
+    if _cache is None:
+        s = get_settings()
+        _cache = TTLCache(maxsize=s.cache_max_size, ttl=s.cache_ttl_seconds)
+    return _cache
 
 
 def cache_get(key: str) -> Optional[dict]:
-    """Fetch a cached JSON object, or None on miss/unavailable cache."""
-    client = _client()
-    if client is None:
-        return None
     try:
-        raw = client.get(key)
-        return json.loads(raw) if raw else None
-    except redis.RedisError as exc:
-        log.warning("cache_get_failed", key=key, error=str(exc))
+        return _get_cache()[key]
+    except KeyError:
         return None
 
 
 def cache_set(key: str, value: dict) -> None:
-    """Store a JSON object with the configured TTL; failures are non-fatal."""
-    client = _client()
-    if client is None:
-        return
     try:
-        client.setex(key, get_settings().cache_ttl_seconds, json.dumps(value))
-    except redis.RedisError as exc:
+        _get_cache()[key] = value
+    except Exception as exc:
         log.warning("cache_set_failed", key=key, error=str(exc))

@@ -2,9 +2,9 @@
 
 import pandas as pd
 
-from app.data_source import DataSource
-from app.ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
-from app.schemas import (
+from ..data_source import DataSource
+from ..ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
+from ..schemas import (
     CurvePoint,
     ElasticityResult,
     ProductInfo,
@@ -36,20 +36,14 @@ def list_products(source: DataSource) -> list[ProductInfo]:
     return products
 
 
-def _series_or_raise(
-    source: DataSource, product_id: str, market: str
-) -> pd.DataFrame:
+def _series_or_raise(source: DataSource, product_id: str, market: str) -> pd.DataFrame:
     daily = source.product_series(product_id, market)
     if daily.empty:
-        raise ProductNotFoundError(
-            f"No data for {product_id} in market {market}."
-        )
+        raise ProductNotFoundError(f"No data for {product_id} in market {market}.")
     return daily
 
 
-def get_summary(
-    source: DataSource, product_id: str, market: str
-) -> ProductSummary:
+def get_summary(source: DataSource, product_id: str, market: str) -> ProductSummary:
     """KPIs plus the weekly series that feeds the dashboard charts."""
     daily = _series_or_raise(source, product_id, market)
     meta = source.list_products()
@@ -88,17 +82,11 @@ def get_elasticity(
     """
     daily = _series_or_raise(source, product_id, market)
     meta = source.list_products()
-    category = str(
-        meta[meta["product_id"] == product_id]["category"].iloc[0]
-    )
-    current_price = float(
-        daily.sort_values("date")["unit_price_eur"].iloc[-1]
-    )
+    category = str(meta[meta["product_id"] == product_id]["category"].iloc[0])
+    current_price = float(daily.sort_values("date")["unit_price_eur"].iloc[-1])
     fit = load_elasticity(product_id, market, category, current_price)
     if fit is None:
-        fit = fit_elasticity(
-            daily, unit_cost=float(daily["unit_cost_eur"].iloc[0])
-        )
+        fit = fit_elasticity(daily, unit_cost=float(daily["unit_cost_eur"].iloc[0]))
     curve = [
         CurvePoint(
             price=round(float(p), 2),

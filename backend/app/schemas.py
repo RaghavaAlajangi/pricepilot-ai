@@ -55,9 +55,7 @@ class CurvePoint(BaseModel):
 class ElasticityResult(BaseModel):
     product_id: str
     market: Market
-    elasticity: float = Field(
-        description="% change in demand per 1% price change"
-    )
+    elasticity: float = Field(description="% change in demand per 1% price change")
     r_squared: float
     n_weeks: int
     current_price: float
@@ -104,9 +102,7 @@ class ReviewerVerdict(BaseModel):
 
     verdict: Literal["approve", "revise", "reject"]
     checks_performed: list[str] = Field(
-        description=(
-            "List of individual checks performed, one string per check."
-        )
+        description=("List of individual checks performed, one string per check.")
     )
     concerns: list[str] = Field(
         description="List of specific concerns found. Empty list if none."

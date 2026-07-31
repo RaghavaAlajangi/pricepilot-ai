@@ -8,9 +8,7 @@ import structlog
 
 def configure_logging(level: str = "INFO") -> None:
     """Route all logs through structlog and emit one JSON object per line."""
-    logging.basicConfig(
-        stream=sys.stdout, level=level.upper(), format="%(message)s"
-    )
+    logging.basicConfig(stream=sys.stdout, level=level.upper(), format="%(message)s")
     structlog.configure(
         processors=[
             structlog.processors.add_log_level,
