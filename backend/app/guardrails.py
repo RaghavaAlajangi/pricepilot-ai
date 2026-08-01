@@ -1,6 +1,7 @@
 """Guardrails: code-level checks on agent output before it reaches the client.
 
-Two kinds of checks live here (and are reused by scripts/evaluate_agents.py):
+Two kinds of checks live here (and are reused by the agent regression tests
+in tests/test_agent_eval.py):
 - safety:    the recommended price must clear cost and stay in a plausible band
 - grounding: numbers an agent cites must actually appear in its input payload
 """
