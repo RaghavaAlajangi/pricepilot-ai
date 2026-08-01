@@ -30,7 +30,12 @@ class Settings(BaseSettings):
     # Example: https://app.example.com,https://staging.example.com
     frontend_origins: str = "http://localhost:3000"
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
 
 @lru_cache
