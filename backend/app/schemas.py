@@ -18,6 +18,24 @@ class ProductInfo(BaseModel):
     markets: list[str]
 
 
+# observability ----------------------------------------------------------------
+class PerfStats(BaseModel):
+    """Server-side latency breakdown for one request."""
+
+    backend: Literal["in-memory", "postgres"]
+    data_fetch_ms: float = Field(ge=0)
+    compute_ms: float = Field(ge=0, description="ML fit/inference time")
+
+
+class AgentStepStats(BaseModel):
+    """Telemetry for one LangGraph node (one LLM call)."""
+
+    agent: Literal["analyst", "strategist", "reviewer"]
+    latency_ms: int = Field(ge=0)
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+
+
 # summary / charts ------------------------------------------------------------
 class WeeklyPoint(BaseModel):
     """One week of sales for a product in a market (chart-ready)."""
@@ -41,6 +59,7 @@ class ProductSummary(BaseModel):
     total_revenue: float
     avg_weekly_units: float
     weekly: list[WeeklyPoint]
+    perf: PerfStats | None = None
 
 
 # ML result ------------------------------------------------------------------
@@ -68,6 +87,7 @@ class ElasticityResult(BaseModel):
     confidence: Literal["high", "medium", "low"]
     warnings: list[str]
     curve: list[CurvePoint]
+    perf: PerfStats | None = None
 
 
 # agents ----------------------------------------------------------------------
@@ -125,6 +145,9 @@ class AgentAnalysisResponse(BaseModel):
     guardrail: GuardrailReport
     model: str
     cached: bool
+    steps: list[AgentStepStats] = Field(default_factory=list)
+    total_latency_ms: int = 0
+    total_tokens: int = 0
 
 
 # misc ------------------------------------------------------------------------
