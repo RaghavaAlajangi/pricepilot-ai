@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
 
-    # CORS: origin of the frontend allowed to call this API.
-    frontend_origin: str = "http://localhost:3000"
+    # CORS: comma-separated list of allowed frontend origins (no trailing slashes).
+    # Example: https://app.example.com,https://staging.example.com
+    frontend_origins: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
