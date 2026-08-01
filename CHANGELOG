@@ -3,6 +3,7 @@
  - backend:
     - feat: add minimal observability setup to show metrics (latency and tokens)
     - feat: add agent streaming
+    - feat: protect agent endpoints with static API key
  - fronent:
     - feat: enhance ui style, show metrics, and agent interaction
 
