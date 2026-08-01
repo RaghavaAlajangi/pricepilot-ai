@@ -2,6 +2,7 @@
  - date: 01-08-2026
  - changes:
     - ci: show badges on REDAME including code coverage, ci, and deploy tag
+    - ci: add live agent testing
     # backend:
     - feat: add minimal observability setup to show metrics (latency and tokens)
     - feat: add agent streaming
