@@ -103,8 +103,11 @@ class AnalystFindings(BaseModel):
     findings: list[str] = Field(
         description="3-5 bullet findings, each citing numbers from the input"
     )
+    # default_factory: models sometimes omit an empty list instead of
+    # sending [] — treat omission as "no caveats", not a parse failure
     data_quality_notes: list[str] = Field(
-        description="Caveats about model fit or data coverage"
+        default_factory=list,
+        description="Caveats about model fit or data coverage",
     )
 
 
@@ -114,7 +117,7 @@ class StrategistRecommendation(BaseModel):
     recommended_price_eur: float = Field(gt=0)
     rationale: str
     expected_impact: str
-    risks: list[str]
+    risks: list[str] = Field(default_factory=list)
 
 
 class ReviewerVerdict(BaseModel):
@@ -125,7 +128,8 @@ class ReviewerVerdict(BaseModel):
         description=("List of individual checks performed, one string per check.")
     )
     concerns: list[str] = Field(
-        description="List of specific concerns found. Empty list if none."
+        default_factory=list,
+        description="List of specific concerns found. Empty list if none.",
     )
 
 

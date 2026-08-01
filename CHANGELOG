@@ -1,3 +1,10 @@
+0.3.1
+ - date: 01-08-2026
+ - changes:
+    - fix: harden agent pipeline against LLM output variability
+    # frontend:
+    - enh: enhance header layout and add GitHub icon to homepage
+
 0.3.0
  - date: 01-08-2026
  - changes:
