@@ -52,3 +52,9 @@ def test_invented_number_is_caught() -> None:
 
 def test_small_integers_ignored() -> None:
     assert ungrounded_numbers("Top 3 of 5 products", [100.0]) == []
+
+
+def test_identifier_digits_are_not_numbers() -> None:
+    """Digits inside IDs like SKU-1000 must not be read as -1000."""
+    text = "For SKU-1000 the price of 89.95 EUR is optimal."
+    assert ungrounded_numbers(text, [89.95]) == []

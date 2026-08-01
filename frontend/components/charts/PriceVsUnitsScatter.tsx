@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_COLORS } from "@/lib/colors";
+import { CHART_COLORS, TOOLTIP_STYLE } from "@/lib/colors";
 import type { WeeklyPoint } from "@/lib/types";
 import ChartCard from "./ChartCard";
 
@@ -35,7 +35,8 @@ export default function PriceVsUnitsScatter({ weekly }: { weekly: WeeklyPoint[] 
           />
           <YAxis type="number" dataKey="units" name="Units sold" tick={AXIS_STYLE} width={44} />
           <Tooltip
-            cursor={{ strokeDasharray: "4 4" }}
+            {...TOOLTIP_STYLE}
+            cursor={{ stroke: CHART_COLORS.muted, strokeDasharray: "4 4" }}
             formatter={(value: number, name: string) =>
               name === "Avg price" ? `${value.toFixed(2)} €` : value
             }

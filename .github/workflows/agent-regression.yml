@@ -1,0 +1,92 @@
+name: Agent Regression
+
+on:
+  pull_request:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agent-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt pytest-json-report
+      - name: Agent regression tests
+        run: pytest tests -v -m agent --json-report --json-report-file=agent_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Check regression threshold (block if pass rate drops >2%)
+        run: python scripts/check_regression.py agent_report.json
+      - name: Upload agent report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-report
+          path: backend/agent_report.json
+
+  # Detect whether LLM-facing code changed, so the live eval only runs
+  # when real agent output could actually have regressed. Main only —
+  # feature-branch pushes never trigger the live eval.
+  changes:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      llm_code: ${{ steps.filter.outputs.llm_code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            llm_code:
+              - 'backend/app/agents/**'
+              - 'backend/app/guardrails.py'
+              - 'backend/app/schemas.py'
+              - 'backend/app/services/agent_analysis.py'
+              - 'backend/scripts/evaluate_agents.py'
+              - 'backend/requirements.txt'
+
+  # Same four checks, but against REAL LLM output (3 cases × 3 small calls,
+  # a few thousand tokens per run). Runs only on manual dispatch or when a
+  # push to main touches LLM-facing code — never on PRs (cost + fork PRs
+  # have no access to the OPENAI_API_KEY secret).
+  live-agent-eval:
+    if: >-
+      !cancelled() &&
+      needs.agent-regression.result == 'success' &&
+      (github.event_name == 'workflow_dispatch' ||
+       needs.changes.outputs.llm_code == 'true')
+    needs: [agent-regression, changes]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Live agent evaluation (real LLM)
+        run: python -m scripts.evaluate_agents
+        env:
+          DATASET_PATH: ../data/dataset.csv
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

@@ -3,5 +3,7 @@
 @tailwind utilities;
 
 body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+  @apply bg-page text-ink antialiased;
+  /* native form controls (selects, scrollbars) render for a dark surface */
+  color-scheme: dark;
 }

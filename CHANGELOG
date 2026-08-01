@@ -1,21 +1,36 @@
+0.3.0
+ - date: 01-08-2026
+ - changes:
+    - ci: show badges on REDAME including code coverage, ci, and deploy tag
+    - ci: add live agent testing
+    # backend:
+    - feat: add minimal observability setup to show metrics (latency and tokens)
+    - feat: add agent streaming
+    - feat: protect agent endpoints with static API key
+    # frontend:
+    - feat: enhance ui style, show metrics, and agent interaction
+
 0.2.1
  - date: 31-07-2026
- - backend:
+ - changes:
+    # backend:
     - ref: use pretrained model for inference
 
 0.2.0
  - date: 31-07-2026
- - backend:
+ - changes:
+    # backend:
     - feat: implement cicd pipeline to deploy app on render
     - ci: add automated ruff linting and pytest test checks
     - ci: add reggression based agent pipeline deployment
- - fronent:
+    # frontend:
     - feat: implement cicd pipeline to deploy app on vercel
     - ci: add automated linting checks
 
 0.1.0
  - date: 31-07-2026
- - backend:
+ - changes:
+    # backend:
     - ref: cleanup
- - fronent:
+    # frontend:
     - Initial release

@@ -10,6 +10,12 @@ export interface ProductInfo {
   markets: string[];
 }
 
+export interface PerfStats {
+  backend: "in-memory" | "postgres";
+  data_fetch_ms: number;
+  compute_ms: number;
+}
+
 export interface WeeklyPoint {
   week: string;
   avg_price: number;
@@ -30,6 +36,7 @@ export interface ProductSummary {
   total_revenue: number;
   avg_weekly_units: number;
   weekly: WeeklyPoint[];
+  perf: PerfStats | null;
 }
 
 export interface CurvePoint {
@@ -54,6 +61,7 @@ export interface ElasticityResult {
   confidence: "high" | "medium" | "low";
   warnings: string[];
   curve: CurvePoint[];
+  perf: PerfStats | null;
 }
 
 export interface AnalystFindings {
@@ -80,6 +88,15 @@ export interface GuardrailReport {
   violations: string[];
 }
 
+export type AgentName = "analyst" | "strategist" | "reviewer";
+
+export interface AgentStepStats {
+  agent: AgentName;
+  latency_ms: number;
+  input_tokens: number;
+  output_tokens: number;
+}
+
 export interface AgentAnalysisResponse {
   product_id: string;
   market: Market;
@@ -89,4 +106,14 @@ export interface AgentAnalysisResponse {
   guardrail: GuardrailReport;
   model: string;
   cached: boolean;
+  steps: AgentStepStats[];
+  total_latency_ms: number;
+  total_tokens: number;
 }
+
+/** Events emitted by POST /api/v1/agents/analyze/stream (SSE). */
+export type AgentStreamEvent =
+  | { event: "step_started"; agent: AgentName }
+  | ({ event: "step_completed" } & AgentStepStats)
+  | { event: "result"; data: AgentAnalysisResponse }
+  | { event: "error"; detail: string };

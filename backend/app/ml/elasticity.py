@@ -1,15 +1,15 @@
 """Price-elasticity estimation — hybrid model loading + live fallback.
 
-Inference priority (set by the notebook training run):
+Inference priority:
   Tier 1 — dedicated OLS per SKU/market
            weights/dedicated_{sku}_{mkt}.joblib
   Tier 2 — category Ridge per cat/market
            weights/category_{cat}_{mkt}.joblib
   Tier 3 — live OLS fit on raw data (fallback, always available)
 
-The notebook ``notebooks/eda_and_elasticity_model.ipynb`` trains Tiers 1 & 2
-and writes the .joblib files.  In production this would be a scheduled batch
-job with MLflow versioning; the notebook documents that roadmap.
+``train/train.py`` trains Tiers 1 & 2 offline and writes the .joblib files.
+In production this would be a scheduled batch job with MLflow versioning;
+the training script's docstring documents that roadmap.
 """
 
 import os

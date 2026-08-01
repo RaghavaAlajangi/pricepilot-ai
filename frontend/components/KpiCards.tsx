@@ -8,9 +8,9 @@ interface KpiProps {
 
 function Kpi({ label, value }: KpiProps) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <p className="text-xs uppercase tracking-wide text-stone-500">{label}</p>
-      <p className="mt-1 text-xl font-semibold">{value}</p>
+    <div className="rounded-xl border border-white/10 bg-surface p-4">
+      <p className="text-xs uppercase tracking-wide text-ink-muted">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
     </div>
   );
 }

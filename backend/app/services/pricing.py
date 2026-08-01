@@ -1,16 +1,29 @@
 """Business logic: catalogue, summaries, ML results and the agent payload."""
 
+import time
+from typing import Literal
+
 import pandas as pd
 
+from ..config import get_settings
 from ..data_source import DataSource
 from ..ml.elasticity import fit_elasticity, load_elasticity, weekly_aggregate
 from ..schemas import (
     CurvePoint,
     ElasticityResult,
+    PerfStats,
     ProductInfo,
     ProductSummary,
     WeeklyPoint,
 )
+
+
+def _backend_label() -> Literal["in-memory", "postgres"]:
+    return "postgres" if get_settings().database_url else "in-memory"
+
+
+def _elapsed_ms(since: float) -> float:
+    return round((time.perf_counter() - since) * 1000, 1)
 
 
 class ProductNotFoundError(LookupError):
@@ -45,8 +58,12 @@ def _series_or_raise(source: DataSource, product_id: str, market: str) -> pd.Dat
 
 def get_summary(source: DataSource, product_id: str, market: str) -> ProductSummary:
     """KPIs plus the weekly series that feeds the dashboard charts."""
+    fetch_started = time.perf_counter()
     daily = _series_or_raise(source, product_id, market)
     meta = source.list_products()
+    data_fetch_ms = _elapsed_ms(fetch_started)
+
+    compute_started = time.perf_counter()
     meta = meta[meta["product_id"] == product_id].iloc[0]
     weekly = weekly_aggregate(daily)
     return ProductSummary(
@@ -70,6 +87,11 @@ def get_summary(source: DataSource, product_id: str, market: str) -> ProductSumm
             )
             for row in weekly.itertuples()
         ],
+        perf=PerfStats(
+            backend=_backend_label(),
+            data_fetch_ms=data_fetch_ms,
+            compute_ms=_elapsed_ms(compute_started),
+        ),
     )
 
 
@@ -80,8 +102,12 @@ def get_elasticity(
 
     Priority: Tier 1 (dedicated) → Tier 2 (category Ridge) → Tier 3 (live OLS).
     """
+    fetch_started = time.perf_counter()
     daily = _series_or_raise(source, product_id, market)
     meta = source.list_products()
+    data_fetch_ms = _elapsed_ms(fetch_started)
+
+    compute_started = time.perf_counter()
     category = str(meta[meta["product_id"] == product_id]["category"].iloc[0])
     current_price = float(daily.sort_values("date")["unit_price_eur"].iloc[-1])
     fit = load_elasticity(product_id, market, category, current_price)
@@ -111,6 +137,11 @@ def get_elasticity(
         confidence=fit.confidence,
         warnings=fit.warnings,
         curve=curve,
+        perf=PerfStats(
+            backend=_backend_label(),
+            data_fetch_ms=data_fetch_ms,
+            compute_ms=_elapsed_ms(compute_started),
+        ),
     )
 
 
