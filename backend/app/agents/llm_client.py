@@ -12,6 +12,9 @@ from ..config import get_settings
 
 LLM_TEMPERATURE = 0.2
 LLM_MAX_TOKENS = 800
+# Total attempts when the model returns schema-invalid output (transport
+# errors are retried separately via the client's max_retries).
+LLM_PARSE_ATTEMPTS = 2
 
 
 class AgentError(RuntimeError):
@@ -54,32 +57,37 @@ class LLMClient:
     def call(
         self, system_prompt: str, user_content: dict, schema: type
     ) -> LLMCallResult:
-        """Single LLM call; wraps provider errors into AgentError.
+        """Structured LLM call; wraps provider errors into AgentError.
 
         ``include_raw=True`` keeps the raw AIMessage alongside the parsed
-        object so token usage can be reported per agent step.
+        object so token usage can be reported per agent step. Transport
+        errors are retried by the underlying client (``max_retries``);
+        schema-parse failures are nondeterministic, so one re-invoke is
+        attempted before giving up.
         """
-        try:
-            structured = self._llm.with_structured_output(schema, include_raw=True)
-            started = time.perf_counter()
-            result = structured.invoke(
-                [
-                    ("system", system_prompt),
-                    ("user", json.dumps(user_content, default=str)),
-                ]
-            )
-            latency_ms = round((time.perf_counter() - started) * 1000)
-        except Exception as exc:
-            raise AgentError(f"{schema.__name__} agent call failed: {exc}") from exc
-        if result.get("parsing_error") or result.get("parsed") is None:
-            raise AgentError(
-                f"{schema.__name__} agent returned unparseable output: "
-                f"{result.get('parsing_error')}"
-            )
-        usage = getattr(result.get("raw"), "usage_metadata", None) or {}
-        return LLMCallResult(
-            output=result["parsed"],
-            latency_ms=latency_ms,
-            input_tokens=int(usage.get("input_tokens", 0)),
-            output_tokens=int(usage.get("output_tokens", 0)),
+        structured = self._llm.with_structured_output(schema, include_raw=True)
+        messages = [
+            ("system", system_prompt),
+            ("user", json.dumps(user_content, default=str)),
+        ]
+        started = time.perf_counter()
+        parse_error: object = None
+        for _ in range(LLM_PARSE_ATTEMPTS):
+            try:
+                result = structured.invoke(messages)
+            except Exception as exc:
+                raise AgentError(
+                    f"{schema.__name__} agent call failed: {exc}"
+                ) from exc
+            if not result.get("parsing_error") and result.get("parsed") is not None:
+                usage = getattr(result.get("raw"), "usage_metadata", None) or {}
+                return LLMCallResult(
+                    output=result["parsed"],
+                    latency_ms=round((time.perf_counter() - started) * 1000),
+                    input_tokens=int(usage.get("input_tokens", 0)),
+                    output_tokens=int(usage.get("output_tokens", 0)),
+                )
+            parse_error = result.get("parsing_error")
+        raise AgentError(
+            f"{schema.__name__} agent returned unparseable output: {parse_error}"
         )
