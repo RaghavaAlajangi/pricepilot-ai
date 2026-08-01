@@ -24,13 +24,13 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt pytest-json-report
+        run: pip install -r requirements-dev.txt pytest-json-report pytest-cov
       - name: Lint
         run: ruff check app tests
       - name: Format check
         run: ruff format --check app tests
       - name: Run tests
-        run: pytest tests -v -m "not agent" --json-report --json-report-file=test_report.json
+        run: pytest tests -v -m "not agent" --json-report --json-report-file=test_report.json --cov=app --cov-report=xml
         env:
           DATASET_PATH: ../data/dataset.csv
       - name: Upload test report
@@ -39,6 +39,13 @@ jobs:
         with:
           name: test-report
           path: backend/test_report.json
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: RaghavaAlajangi/pricepilot-ai
+          files: backend/coverage.xml
+          flags: backend
 
   agent-regression:
     runs-on: ubuntu-latest
