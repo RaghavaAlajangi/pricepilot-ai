@@ -3,7 +3,7 @@ name: Agent Regression
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ["**"]
   workflow_dispatch:
 
 permissions:
@@ -40,9 +40,10 @@ jobs:
           path: backend/agent_report.json
 
   # Detect whether LLM-facing code changed, so the live eval only runs
-  # when real agent output could actually have regressed.
+  # when real agent output could actually have regressed. Main only —
+  # feature-branch pushes never trigger the live eval.
   changes:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       llm_code: ${{ steps.filter.outputs.llm_code }}
