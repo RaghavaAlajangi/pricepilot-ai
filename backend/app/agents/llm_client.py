@@ -76,9 +76,7 @@ class LLMClient:
             try:
                 result = structured.invoke(messages)
             except Exception as exc:
-                raise AgentError(
-                    f"{schema.__name__} agent call failed: {exc}"
-                ) from exc
+                raise AgentError(f"{schema.__name__} agent call failed: {exc}") from exc
             if not result.get("parsing_error") and result.get("parsed") is not None:
                 usage = getattr(result.get("raw"), "usage_metadata", None) or {}
                 return LLMCallResult(
