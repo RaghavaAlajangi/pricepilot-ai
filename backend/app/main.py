@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         cache=f"memory(ttl={settings.cache_ttl_seconds}s,"
         f" max={settings.cache_max_size})",
         llm_configured=bool(settings.openai_api_key),
+        allowed_origins=settings.frontend_origins,
     )
     yield
 
