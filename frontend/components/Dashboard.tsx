@@ -11,6 +11,7 @@ import type {
 import AgentPanel from "./AgentPanel";
 import ElasticitySection from "./ElasticitySection";
 import KpiCards from "./KpiCards";
+import PerfStrip from "./PerfStrip";
 import PriceVsUnitsScatter from "./charts/PriceVsUnitsScatter";
 import TrendCharts from "./charts/TrendCharts";
 
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [market, setMarket] = useState<Market>("DE");
   const [summary, setSummary] = useState<ProductSummary | null>(null);
   const [elasticity, setElasticity] = useState<ElasticityResult | null>(null);
+  const [roundTripMs, setRoundTripMs] = useState<number | null>(null);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -38,6 +40,7 @@ export default function Dashboard() {
     if (!productId) return;
     setLoading(true);
     setError("");
+    const started = performance.now();
     try {
       const [summaryData, elasticityData] = await Promise.all([
         fetchSummary(productId, market),
@@ -45,10 +48,12 @@ export default function Dashboard() {
       ]);
       setSummary(summaryData);
       setElasticity(elasticityData);
+      setRoundTripMs(performance.now() - started);
     } catch (e) {
       setError((e as Error).message);
       setSummary(null);
       setElasticity(null);
+      setRoundTripMs(null);
     } finally {
       setLoading(false);
     }
@@ -59,39 +64,58 @@ export default function Dashboard() {
   }, [loadData]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end gap-4">
-        <label className="flex flex-col text-sm font-medium">
-          Product
-          <select
-            className="mt-1 w-80 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm"
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-          >
-            {products.map((p) => (
-              <option key={p.product_id} value={p.product_id}>
-                {p.product_name} ({p.category})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col text-sm font-medium">
-          Market
-          <select
-            className="mt-1 w-24 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm"
-            value={market}
-            onChange={(e) => setMarket(e.target.value as Market)}
-          >
-            {MARKETS.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-        </label>
-        {loading && <span className="pb-2 text-sm text-stone-400">Loading…</span>}
+    <div className="relative space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-white/10 bg-surface p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="flex flex-col text-sm font-medium text-ink-secondary">
+            Product
+            <select
+              className="mt-1 w-80 rounded-md border border-white/10 bg-raised px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+            >
+              {products.map((p) => (
+                <option key={p.product_id} value={p.product_id}>
+                  {p.product_name} ({p.category})
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex flex-col text-sm font-medium text-ink-secondary">
+            Market
+            <div className="mt-1 inline-flex overflow-hidden rounded-md border border-white/10">
+              {MARKETS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMarket(m)}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    market === m
+                      ? "bg-accent text-white"
+                      : "bg-raised text-ink-secondary hover:text-ink"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+          {loading && (
+            <span className="flex items-center gap-2 pb-2 text-sm text-ink-muted">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-accent" />
+              Loading…
+            </span>
+          )}
+        </div>
+        <PerfStrip
+          summaryPerf={summary?.perf ?? null}
+          elasticityPerf={elasticity?.perf ?? null}
+          roundTripMs={roundTripMs}
+        />
       </div>
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-md border border-status-critical/40 bg-status-critical/10 p-3 text-sm text-red-300">
           {error}
         </div>
       )}
