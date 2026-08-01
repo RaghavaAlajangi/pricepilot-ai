@@ -3,7 +3,7 @@
 [![CI](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml)
 [![Deploy](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/deploy.yml)
 [![Coverage](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai)
-[![Agent regression](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml/badge.svg?label=agent-regression&event=push)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml)
+[![Agent Regression](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml)
 
 Proof of concept for **ML- and AI-agent-supported pricing decisions** at a
 European lighting e-commerce group. It analyses two years of daily sales

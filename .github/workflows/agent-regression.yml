@@ -1,0 +1,39 @@
+name: Agent Regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  agent-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt pytest-json-report
+      - name: Agent regression tests
+        run: pytest tests -v -m agent --json-report --json-report-file=agent_report.json
+        env:
+          DATASET_PATH: ../data/dataset.csv
+      - name: Check regression threshold (block if pass rate drops >2%)
+        run: python scripts/check_regression.py agent_report.json
+      - name: Upload agent report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-report
+          path: backend/agent_report.json
