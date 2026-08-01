@@ -7,6 +7,7 @@
 #   VERCEL_PROJECT_ID   — Vercel project ID   (vercel link → .vercel/project.json)
 #   RENDER_API_KEY      — Render API key (Account → API Keys)
 #   RENDER_SERVICE_ID   — Render service ID (from service URL: srv-xxxxx)
+#   OPENAI_API_KEY      — used by the live agent evaluation gate (real LLM)
 
 name: Deploy
 
@@ -74,6 +75,11 @@ jobs:
           DATASET_PATH: ../data/dataset.csv
       - name: Check regression threshold (block if pass rate drops >2%)
         run: python scripts/check_regression.py agent_report.json
+      - name: Live agent evaluation (real LLM output must pass all checks)
+        run: python -m scripts.evaluate_agents
+        env:
+          DATASET_PATH: ../data/dataset.csv
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
   # ---------------------------------------------------------------------------
   # Deploy backend to Render

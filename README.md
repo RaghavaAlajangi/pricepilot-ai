@@ -192,7 +192,8 @@ CI by the [agent evaluation](#evaluation--agent-regression-tests): every
 number ≥ 10 cited in agent text must match a number in the agent's input
 payload within **±5%**, otherwise it is flagged as ungrounded. The offline
 suite exercises the check logic on every PR; the live evaluation applies
-it to real LLM output on `main` and as a deploy gate.
+it to real LLM output when agent code changes on `main` and as a deploy
+gate.
 
 </details>
 
@@ -205,8 +206,8 @@ sharing the same four checks:
   `agent`) — simulated agent output, no API key, runs on every PR and push.
 - **Live evaluation** (`backend/scripts/evaluate_agents.py`) — runs the
   real LLM workflow over 3 example cases and applies the checks to what
-  the agents actually said; runs in CI on pushes to `main` and as a gate
-  before every deployment.
+  the agents actually said; runs in CI when LLM-facing code changes and
+  as a gate before every deployment.
 
 ```bash
 cd backend
@@ -234,14 +235,17 @@ the evaluation can actually detect failures, not just pass.
 run on every PR — it protects the check logic and the ML pipeline from
 regressions. The live evaluation is the part the brief actually describes
 (sanity-checking what the agents say), so it runs where real output
-matters: after merges to `main` and before a deploy goes out. It costs
-roughly nine small LLM calls per run.
+matters, at roughly nine small LLM calls per run.
 
 `.github/workflows/agent-regression.yml` runs the offline suite on every
 PR and push (with `scripts/check_regression.py` blocking if the pass rate
-drops more than 2%) and the live evaluation on `main` pushes and manual
-dispatch. `deploy.yml` runs both as gates before deploying — a release
-tag will not ship if real agent output fails a check.
+drops more than 2%). The live evaluation is conditional: a paths filter
+triggers it only when a push to `main` touches LLM-facing code (agents,
+prompts, guardrails, schemas, the eval script, or pinned dependencies) —
+doc or frontend changes don't burn API tokens. It can also be started
+manually from the Actions tab. `deploy.yml` runs both as gates before
+deploying — a release tag will not ship if real agent output fails a
+check.
 
 This is intentionally *not* an evaluation framework — a handful of
 deterministic checks over a few example cases, which is what the task asks

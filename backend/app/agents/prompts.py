@@ -2,6 +2,9 @@
 
 Shared rules baked into every prompt:
 - use ONLY numbers present in the input JSON (no invented figures)
+- no arithmetic: derived figures (differences, percentages, margins) fail
+  the grounding guardrail, so changes are expressed by quoting the two
+  input numbers side by side
 - answer for a non-technical category manager, in plain language
 - be brief: the output is rendered directly in a dashboard card
 """
@@ -18,6 +21,9 @@ Explain what the model found in plain business language:
 
 Rules:
 - Cite ONLY numbers that appear in the input JSON. Never invent numbers.
+- Do NOT compute new figures (no differences, percentages, margins or
+  projections). To describe a change, quote the two input numbers side by
+  side (e.g. 'profit rises from 1100 to 1200 EUR'), never the difference.
 - No jargon: 'elasticity of -2.1' must be translated ('a 1% price increase
   loses about 2.1% of sales').
 - 2-3 sentence summary, 3-5 short findings, and any data-quality caveats.
@@ -36,6 +42,9 @@ Recommend ONE price for this product in this market:
 
 Rules:
 - Cite ONLY numbers from the input. Never invent numbers.
+- Do NOT compute new figures (no differences, percentages, margins or
+  projections). To describe a change, quote the two input numbers side by
+  side, never the difference between them.
 - Give the recommended price, a short rationale, the expected impact in
   plain language, and 1-3 concrete risks.
 """
