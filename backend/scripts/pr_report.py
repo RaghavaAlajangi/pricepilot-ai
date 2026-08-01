@@ -71,9 +71,11 @@ def regression_section(agent_report: dict, baseline_path: str) -> str:
     threshold = 0.02
 
     if drop > threshold:
-        status = f"❌ **REGRESSION DETECTED** — pass rate dropped {drop:.1%} (threshold {threshold:.0%})"
+        status = "❌ **REGRESSION DETECTED** — pass rate dropped "
+        f"{drop:.1%} (threshold {threshold:.0%})"
     else:
-        status = f"✅ Pass rate {current:.0%} (baseline {base:.0%}, drop {drop:.1%})"
+        status = f"✅ Pass rate {current:.0%} (baseline {base:.0%}, "
+        f"drop {drop:.1%})"
 
     return f"\n### 🤖 Agent Regression Gate\n\n{status}\n"
 
