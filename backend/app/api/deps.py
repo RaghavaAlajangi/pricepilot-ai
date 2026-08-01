@@ -5,7 +5,7 @@ from fastapi import Header, HTTPException
 from ..config import get_settings
 
 
-async def verify_api_key(x_api_key: str = Header(...)) -> None:
+async def verify_api_key(x_api_key: str | None = Header(default=None)) -> None:
     """Reject requests whose X-API-Key header does not match APP_API_KEY.
 
     If APP_API_KEY is not configured the check is skipped so local dev works
