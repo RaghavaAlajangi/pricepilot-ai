@@ -9,9 +9,14 @@ import type {
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Server-side only — no NEXT_PUBLIC_ prefix so it is never sent to the browser.
+const APP_API_KEY = process.env.APP_API_KEY ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, init);
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", headers.get("Content-Type") ?? "application/json");
+  if (APP_API_KEY) headers.set("X-API-Key", APP_API_KEY);
+  const response = await fetch(`${API_BASE}${path}`, { ...init, headers });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as {
       detail?: string;
@@ -49,7 +54,6 @@ export function runAgentAnalysis(
 ): Promise<AgentAnalysisResponse> {
   return request<AgentAnalysisResponse>("/api/v1/agents/analyze", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ product_id: productId, market }),
   });
 }
@@ -65,9 +69,11 @@ export async function runAgentAnalysisStream(
   market: Market,
   onEvent: (event: AgentStreamEvent) => void,
 ): Promise<AgentAnalysisResponse> {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (APP_API_KEY) (headers as Record<string, string>)["X-API-Key"] = APP_API_KEY;
   const response = await fetch(`${API_BASE}/api/v1/agents/analyze/stream`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ product_id: productId, market }),
   });
   if (!response.ok) {

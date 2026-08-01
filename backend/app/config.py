@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
 
+    # API key that the frontend must send as X-API-Key to reach agent endpoints.
+    # Generate with: openssl rand -hex 32
+    app_api_key: str = ""
+
     # CORS: comma-separated list of allowed frontend origins (no trailing slashes).
     # Example: https://app.example.com,https://staging.example.com
     frontend_origins: str = "http://localhost:3000"

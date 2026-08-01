@@ -22,6 +22,7 @@ from ..schemas import (
 )
 from ..services import agent_analysis, pricing
 from ..services.pricing import ProductNotFoundError
+from .deps import verify_api_key
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/api/v1")
@@ -78,6 +79,7 @@ def _require_llm_configured() -> None:
 async def analyze_with_agents(
     request: AgentAnalysisRequest,  # guardrail: SKU pattern + market enum
     source: DataSource = Depends(get_data_source),
+    _: None = Depends(verify_api_key),
 ) -> AgentAnalysisResponse:
     """Run the analyst -> strategist -> reviewer agent workflow."""
     _require_llm_configured()
@@ -100,6 +102,7 @@ async def analyze_with_agents(
 async def analyze_with_agents_stream(
     request: AgentAnalysisRequest,  # guardrail: SKU pattern + market enum
     source: DataSource = Depends(get_data_source),
+    _: None = Depends(verify_api_key),
 ) -> StreamingResponse:
     """Same workflow as ``/agents/analyze`` but as Server-Sent Events.
 
