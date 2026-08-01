@@ -218,11 +218,12 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Vercel
+.vercel
+
 # Node / Next.js
 node_modules/
 .next/
 out/
 next-env.d.ts
 *.tsbuildinfo
-
-/data/weights

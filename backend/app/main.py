@@ -1,5 +1,6 @@
 """FastAPI entrypoint: logging, CORS, startup checks and route registration."""
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
@@ -33,6 +34,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         cache=f"memory(ttl={settings.cache_ttl_seconds}s,"
         f" max={settings.cache_max_size})",
         llm_configured=bool(settings.openai_api_key),
+        allowed_origins=settings.frontend_origins,
+        raw_env_var=os.environ.get("FRONTEND_ORIGINS", "<NOT SET>"),
     )
     yield
 
@@ -40,7 +43,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(title=get_settings().app_name, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[get_settings().frontend_origin],
+    allow_origins=[
+        o.strip() for o in get_settings().frontend_origins.split(",") if o.strip()
+    ],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )

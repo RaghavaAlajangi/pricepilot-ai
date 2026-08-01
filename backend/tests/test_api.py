@@ -1,5 +1,6 @@
 """API integration tests against the CSV-backed test client."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -25,7 +26,14 @@ def test_summary_returns_weekly_series(client: TestClient) -> None:
     assert len(body["weekly"]) > 40
 
 
-def test_elasticity_endpoint(client: TestClient) -> None:
+def test_elasticity_endpoint(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Force live fitting so saved weights don't override the synthetic dataset.
+    import app.services.pricing as pricing_mod
+
+    monkeypatch.setattr(pricing_mod, "load_elasticity", lambda *_: None)
+
     response = client.get(
         "/api/v1/products/SKU-1000/elasticity", params={"market": "DE"}
     )

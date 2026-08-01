@@ -1,3 +1,8 @@
+0.2.1
+ - date: 31-07-2026
+ - backend:
+    - ref: use pretrained model for inference
+
 0.2.0
  - date: 31-07-2026
  - backend:
