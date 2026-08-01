@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # LLM (required only for the /agents endpoints).
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-4.1-mini"
 
     # API key that the frontend must send as X-API-Key to reach agent endpoints.
     # Generate with: openssl rand -hex 32
