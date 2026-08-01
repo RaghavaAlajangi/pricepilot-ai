@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/ci.yml)
 [![Deploy](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/deploy.yml)
+[![Latest release](https://img.shields.io/github/v/release/RaghavaAlajangi/pricepilot-ai?label=deployed&color=blue)](https://github.com/RaghavaAlajangi/pricepilot-ai/releases/latest)
 [![Coverage](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai)
 [![Agent Regression](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml)
 
