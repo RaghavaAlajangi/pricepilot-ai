@@ -3,9 +3,9 @@ import type { ElasticityResult } from "@/lib/types";
 import ProfitCurveChart from "./charts/ProfitCurveChart";
 
 const CONFIDENCE_STYLE: Record<ElasticityResult["confidence"], string> = {
-  high: "bg-green-100 text-green-800",
-  medium: "bg-amber-100 text-amber-800",
-  low: "bg-red-100 text-red-800",
+  high: "bg-status-good/15 text-green-400",
+  medium: "bg-status-warning/15 text-amber-300",
+  low: "bg-status-critical/15 text-red-400",
 };
 
 interface StatProps {
@@ -17,9 +17,9 @@ interface StatProps {
 function Stat({ label, value, hint }: StatProps) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-stone-500">{label}</p>
-      <p className="text-lg font-semibold">{value}</p>
-      {hint && <p className="text-xs text-stone-500">{hint}</p>}
+      <p className="text-xs uppercase tracking-wide text-ink-muted">{label}</p>
+      <p className="text-lg font-semibold text-ink">{value}</p>
+      {hint && <p className="text-xs text-ink-muted">{hint}</p>}
     </div>
   );
 }
@@ -29,16 +29,26 @@ export default function ElasticitySection({ result }: { result: ElasticityResult
   const profitLift = result.profit_at_recommended - result.profit_at_current;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-lg border border-stone-200 bg-white p-4">
+      <section className="rounded-xl border border-white/10 bg-surface p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Price-demand model</h2>
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${CONFIDENCE_STYLE[result.confidence]}`}
-          >
-            {result.confidence} confidence
-          </span>
+          <h2 className="text-sm font-semibold text-ink">Price-demand model</h2>
+          <div className="flex items-center gap-2">
+            {result.perf && (
+              <span
+                className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-ink-muted"
+                title="Server-side model inference time for this request"
+              >
+                inference {result.perf.compute_ms.toFixed(1)} ms
+              </span>
+            )}
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${CONFIDENCE_STYLE[result.confidence]}`}
+            >
+              {result.confidence} confidence
+            </span>
+          </div>
         </div>
-        <p className="mb-4 mt-1 text-xs text-stone-500">
+        <p className="mb-4 mt-1 text-xs text-ink-muted">
           Log-log regression on {result.n_weeks} weeks of sales
         </p>
         <div className="grid grid-cols-2 gap-4">
@@ -60,7 +70,7 @@ export default function ElasticitySection({ result }: { result: ElasticityResult
           />
         </div>
         {result.warnings.length > 0 && (
-          <ul className="mt-4 space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <ul className="mt-4 space-y-1 rounded-md border border-status-warning/30 bg-status-warning/10 p-3 text-xs text-amber-200">
             {result.warnings.map((warning) => (
               <li key={warning}>&#9888; {warning}</li>
             ))}
