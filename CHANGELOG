@@ -1,3 +1,11 @@
+0.3.0
+ - date: 01-08-2026
+ - backend:
+    - feat: add minimal observability setup to show metrics (latency and tokens)
+    - feat: add agent streaming
+ - fronent:
+    - feat: enhance ui style, show metrics, and agent interaction
+
 0.2.1
  - date: 31-07-2026
  - backend:
