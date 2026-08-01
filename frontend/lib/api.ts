@@ -9,8 +9,7 @@ import type {
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-// Server-side only — no NEXT_PUBLIC_ prefix so it is never sent to the browser.
-const APP_API_KEY = process.env.APP_API_KEY ?? "";
+const APP_API_KEY = process.env.NEXT_PUBLIC_APP_API_KEY || "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);

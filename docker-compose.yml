@@ -9,6 +9,16 @@ services:
       WEIGHTS_DIR: /app/data/weights
     ports:
       - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/app
+          target: /app/app
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+        - action: rebuild
+          path: ./backend/requirements.txt
     healthcheck:
       test:
         [
@@ -25,10 +35,24 @@ services:
   frontend:
     build:
       context: ./frontend
+      target: dev
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_APP_API_KEY: ${NEXT_PUBLIC_APP_API_KEY}
     ports:
       - "3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./frontend/package.json
     depends_on:
       backend:
         condition: service_healthy

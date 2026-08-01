@@ -7,7 +7,18 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# ---- stage 2: build ----------------------------------------------------------
+# ---- stage 2: dev (used by docker compose watch) ----------------------------
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
+# ---- stage 3: build ----------------------------------------------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -18,7 +29,7 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-# ---- stage 3: runtime --------------------------------------------------------
+# ---- stage 4: runtime --------------------------------------------------------
 FROM node:20-alpine
 
 WORKDIR /app
