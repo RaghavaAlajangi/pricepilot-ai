@@ -1,7 +1,8 @@
 """Guardrails: code-level checks on agent output before it reaches the client.
 
-Two kinds of checks live here (and are reused by the agent regression tests
-in tests/test_agent_eval.py):
+Two kinds of checks live here (reused by the offline regression tests in
+tests/test_agent_eval.py and the live evaluation in
+scripts/evaluate_agents.py):
 - safety:    the recommended price must clear cost and stay in a plausible band
 - grounding: numbers an agent cites must actually appear in its input payload
 """
@@ -12,7 +13,9 @@ from .schemas import StrategistRecommendation
 
 COST_FLOOR_MARGIN = 1.02  # never recommend below cost + 2%
 MAX_MOVE_FROM_CURRENT = 0.30  # max +/-30% vs current price
-NUMBER_PATTERN = re.compile(r"-?\d+(?:[.,]\d+)?")
+# Lookbehind stops digits inside identifiers ("SKU-1000") being read as
+# negative numbers; a genuine minus is preceded by space/punctuation.
+NUMBER_PATTERN = re.compile(r"(?<![\w-])-?\d+(?:[.,]\d+)?")
 GROUNDING_TOLERANCE = 0.05  # cited numbers may differ 5% from a source number
 
 
