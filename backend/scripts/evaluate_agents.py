@@ -26,7 +26,11 @@ from app.agents.graph import run_workflow
 from app.agents.llm_client import AgentError
 from app.config import get_settings
 from app.data_source import CsvDataSource
-from app.guardrails import ungrounded_numbers, validate_recommendation
+from app.guardrails import (
+    MAX_MOVE_FROM_CURRENT,
+    ungrounded_numbers,
+    validate_recommendation,
+)
 from app.logging_conf import configure_logging
 from app.schemas import AgentAnalysisResponse, GuardrailReport
 from app.services import pricing
@@ -111,8 +115,13 @@ def evaluate_case(
     # grounding ----------------------------------------------------------
     # The strategist's own recommended price is its decision, not a cited
     # fact, so it is allowed even when it differs from the model optimum
-    # (safety still bounds it above).
-    allowed = _payload_numbers(payload) + [strategist.recommended_price_eur]
+    # (safety still bounds it above). Policy bounds stated in the prompts
+    # (e.g. "within 30% of current price") are grounded context, not
+    # invented data.
+    allowed = _payload_numbers(payload) + [
+        strategist.recommended_price_eur,
+        MAX_MOVE_FROM_CURRENT * 100,
+    ]
     cited_text = " ".join(
         [
             analyst.summary,
