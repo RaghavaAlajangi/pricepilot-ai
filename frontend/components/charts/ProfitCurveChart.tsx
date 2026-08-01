@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_COLORS } from "@/lib/colors";
+import { CHART_COLORS, TOOLTIP_STYLE } from "@/lib/colors";
 import type { ElasticityResult } from "@/lib/types";
 import ChartCard from "./ChartCard";
 
@@ -36,6 +36,7 @@ export default function ProfitCurveChart({ result }: { result: ElasticityResult 
           />
           <YAxis tick={AXIS_STYLE} width={56} tickFormatter={(v: number) => v.toFixed(0)} unit="€" />
           <Tooltip
+            {...TOOLTIP_STYLE}
             formatter={(value: number) => [`${value.toFixed(2)} €`, "Weekly profit"]}
             labelFormatter={(price: number) => `Price ${price.toFixed(2)} €`}
           />

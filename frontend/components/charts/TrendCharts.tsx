@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_COLORS } from "@/lib/colors";
+import { CHART_COLORS, TOOLTIP_STYLE } from "@/lib/colors";
 import type { WeeklyPoint } from "@/lib/types";
 import ChartCard from "./ChartCard";
 
@@ -34,7 +34,7 @@ export default function TrendCharts({ weekly }: { weekly: WeeklyPoint[] }) {
           <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
           <XAxis dataKey="week" tickFormatter={formatWeek} tick={AXIS_STYLE} minTickGap={40} />
           <YAxis tick={AXIS_STYLE} width={44} domain={["auto", "auto"]} unit="€" />
-          <Tooltip formatter={(v: number) => `${v.toFixed(2)} €`} />
+          <Tooltip {...TOOLTIP_STYLE} formatter={(v: number) => `${v.toFixed(2)} €`} />
           <Line
             type="monotone"
             dataKey="avg_price"
@@ -50,7 +50,7 @@ export default function TrendCharts({ weekly }: { weekly: WeeklyPoint[] }) {
           <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
           <XAxis dataKey="week" tickFormatter={formatWeek} tick={AXIS_STYLE} minTickGap={40} />
           <YAxis tick={AXIS_STYLE} width={44} />
-          <Tooltip />
+          <Tooltip {...TOOLTIP_STYLE} />
           <Line
             type="monotone"
             dataKey="units"
