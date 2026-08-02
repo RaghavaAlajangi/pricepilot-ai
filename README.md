@@ -5,7 +5,7 @@
 [![Coverage](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/RaghavaAlajangi/pricepilot-ai)
 [![Agent Regression](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml/badge.svg)](https://github.com/RaghavaAlajangi/pricepilot-ai/actions/workflows/agent-regression.yml)
 
-**Live demo:** [Frontend](https://pricepilot-ai-pi.vercel.app/) · [API docs](https://pricepilot-ai-pi.vercel.app/docs)
+**Live demo:** [Frontend](https://pricepilot-ai-pi.vercel.app/) · [API docs](https://pricepilot-ai-xaco.onrender.com/docs)
 
 Proof of concept for **ML- and AI-agent-supported pricing decisions** at a
 European lighting e-commerce group. It analyses two years of daily sales
