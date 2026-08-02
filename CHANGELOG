@@ -1,3 +1,8 @@
+0.3.2
+ - date: 02-08-2026
+ - changes:
+    - fix: add frontend env variables to GitHub secrets in deploy workflow
+
 0.3.1
  - date: 01-08-2026
  - changes:
